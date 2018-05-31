@@ -79,7 +79,7 @@
             "modalityLabel": "dwi",
             "customLabels": "acq-multishell30dir",
             "criteria": {
-                "SeriesDescription": "(?!(Blip|blip)).*dMRI.*b1000.*d30"
+                "SeriesDescription": "^(?!(Blip|blip)).*dMRI.*b1000.*d30"
             }
         },
         {
