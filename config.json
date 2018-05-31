@@ -4,14 +4,14 @@
             "dataType": "anat",
             "modalityLabel": "T1w",
             "criteria": {
-                "SeriesDescription": "T1 SAG MPRAGE"
+                "SeriesDescription": "T1.*SAG.*MPRAGE"
             }
         },
         {
             "dataType": "anat",
             "modalityLabel": "T2w",
             "criteria": {
-                "SeriesDescription": "T2 AX TSE"
+                "SeriesDescription": "T2.*AX.*TSE"
             }
         },
         {
@@ -26,8 +26,8 @@
             "dataType": "fmap",
             "modalityLabel": "magnitude1",
             "criteria": {
-                "SeriesDescription": "gre_field_mapping for DTI",
-                "ImageType": "M",
+                "SeriesDescription": "gre_field_mapping.*for.*DTI",
+                "ImageType": "^M$",
                 "EchoTime": 0.00519
             }
         },
@@ -35,8 +35,8 @@
             "dataType": "fmap",
             "modalityLabel": "magnitude2",
             "criteria": {
-                "SeriesDescription": "gre_field_mapping for DTI",
-                "ImageType": "M",
+                "SeriesDescription": "gre_field_mapping.*for.*DTI",
+                "ImageType": "^M$",
                 "EchoTime": 0.00765
             }
         },
@@ -44,8 +44,8 @@
             "dataType": "fmap",
             "modalityLabel": "phasediff",
             "criteria": {
-                "SeriesDescription": "gre_field_mapping for DTI",
-                "ImageType": "P",
+                "SeriesDescription": "gre_field_mapping.*for.*DTI",
+                "ImageType": "^P$",
                 "EchoNumber": 2,
                 "EchoTime": 0.00765
             }
@@ -79,7 +79,7 @@
             "modalityLabel": "dwi",
             "customLabels": "acq-multishell30dir",
             "criteria": {
-                "SeriesDescription": "(?!(Blip|blip)).*dMRI b1000 d30"
+                "SeriesDescription": "(?!(Blip|blip)).*dMRI.*b1000.*d30"
             }
         },
         {
@@ -87,7 +87,7 @@
             "modalityLabel": "dwi",
             "customLabels": "acq-multishell40dir",
             "criteria": {
-                "SeriesDescription": "dMRI b1600 d40"
+                "SeriesDescription": "dMRI.*b1600.*d40"
             }
         },
         {
@@ -95,7 +95,7 @@
             "modalityLabel": "dwi",
             "customLabels": "acq-multishell60dir",
             "criteria": {
-                "SeriesDescription": "dMRI b2600 d60"
+                "SeriesDescription": "dMRI.*b2600.*d60"
             }
         },
         {
@@ -127,7 +127,7 @@
             "modalityLabel": "bold",
             "customLabels": "task-tom1",
             "criteria": {
-                "SeriesDescription": "fMRI Ortho TOM1|fMRI Ortho 1 of 3"
+                "SeriesDescription": "fMRI.*Ortho.*TOM1|fMRI.*Ortho.*1.*of.*3"
             }
         },
         {
@@ -135,7 +135,7 @@
             "modalityLabel": "bold",
             "customLabels": "task-tom2",
             "criteria": {
-                "SeriesDescription": "fMRI Ortho TOM2|fMRI Ortho 2 of 3"
+                "SeriesDescription": "fMRI.*Ortho.*TOM2|fMRI.*Ortho.*2.*of.*3"
             }
         },
         {
@@ -143,7 +143,7 @@
             "modalityLabel": "bold",
             "customLabels": "task-tom3",
             "criteria": {
-                "SeriesDescription": "fMRI Ortho TOM3|fMRI Ortho 3 of 3"
+                "SeriesDescription": "fMRI.*Ortho.*TOM3|fMRI.*Ortho.*3.*of.*3"
             }
         }
     ]
