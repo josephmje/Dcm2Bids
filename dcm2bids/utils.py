@@ -1,16 +1,58 @@
 # -*- coding: utf-8 -*-
 
 
-import json
-import os
-import shutil
 import csv
+import json
+import logging
+import os
+import shlex
+from collections import OrderedDict
+from subprocess import check_output, CalledProcessError
+
+
+class DEFAULT(object):
+    """ Default values of the package"""
+    #cli dcm2bids
+    cliSession = ""
+    cliOutputDir = os.getcwd()
+    cliLogLevel = "INFO"
+
+    #dcm2bids.py
+    outputDir = cliOutputDir
+    session = cliSession #also Participant object
+    clobber = False
+    forceDcm2niix = False
+    defaceTpl = None
+    logLevel = "WARNING"
+
+    #dcm2niix.py
+    dcm2niixOptions = "-b y -ba y -z y -f '%3s_%f_%p_%t'"
+    dcm2niixVersion = "v1.0.20181125"
+
+    #sidecar.py
+    compKeys = ["SeriesNumber", "AcquisitionTime", "SidecarFilename"]
+    searchMethod = "fnmatch"
+    searchMethodChoices = ["fnmatch", "re"]
+    runTpl = "_run-{:02d}"
+
+    #misc
+    tmpDirName = "tmp_dcm2bids"
+    helperDir = "helper"
 
 
 def load_json(filename):
+    """ Load a JSON file
+
+    Args:
+        filename (str): Path of a JSON file
+
+    Return:
+        Dictionnary of the JSON file
+    """
     with open(filename, 'r') as f:
-        data = json.load(f)
+        data = json.load(f, object_pairs_hook=OrderedDict)
     return data
+
 
 def save_json(filename, data):
     with open(filename, 'w') as f:
@@ -39,59 +81,30 @@ def read_participants(filename):
         return [row for row in reader]
 
 
-def make_directory_tree(directory):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+def splitext_(path, extensions=['.nii.gz']):
+    """ Split the extension from a pathname
+    Handle case with extensions with '.' in it
 
+    Args:
+        path (str): A path to split
+        extensions (list): List of special extensions
 
-def clean(directory):
-    make_directory_tree(directory)
-    if not os.listdir(directory) == []:
-        shutil.rmtree(directory)
-        make_directory_tree(directory)
-    else:
-        make_directory_tree(directory)
-
-
-def splitext_(path):
-    for ext in ['.nii.gz']:
+    Returns:
+        (root, ext): ext may be empty
+    """
+    for ext in extensions:
         if path.endswith(ext):
             return path[:-len(ext)], path[-len(ext):]
     return os.path.splitext(path)
 
 
-def dcm2niix_version():
-    output = run_shell_command("dcm2niix").split()
-    try:
-        version = output[output.index(b'version')+1]
-    except:
-        version = None
-    return version
-
-
 def run_shell_command(commandLine):
-    import logging
-    import shlex
-    import subprocess
+    """ Wrapper of subprocess.check_output
 
-    logger = logging.getLogger("dcm2bids")
+    Returns:
+        Run command with arguments and return its output
+    """
+    logger = logging.getLogger(__name__)
+    logger.info("Running {}".format(commandLine))
+    return check_output(shlex.split(commandLine))
 
-    cmd = shlex.split(commandLine)
-    logger.info("subprocess: {}".format(commandLine))
-
-    output = None
-    try:
-        process = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output, _ = process.communicate()
-
-        try:
-            logger.info("\n" + output.decode("utf-8"))
-        except:
-            logger.info(output)
-
-    except OSError as exception:
-        logger.error("Exception: {}".format(exception))
-        logger.info("subprocess failed")
-
-    return output

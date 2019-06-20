@@ -1,68 +1,113 @@
 # -*- coding: utf-8 -*-
 
 
-import glob
 import logging
 import os
-from .utils import clean, run_shell_command
+import shutil
+from glob import glob
+from .utils import DEFAULT, run_shell_command
 
 
 class Dcm2niix(object):
-    """
+    """ Object to handle dcm2niix execution
+
+    Args:
+        dicomDirs (list): A list of folder with dicoms to convert
+        bidsDir (str): A path to the root BIDS directory
+        participant: Optional Participant object
+        options (str): Optional arguments for dcm2niix
+
+    Properties:
+        sidecars (list): A list of sidecar path created by dcm2niix
     """
 
-    def __init__(self, dicom_dir, bids_dir, participant=None, logger=True):
-        self.dicomDirs = dicom_dir
-        self.bidsDir = bids_dir
+    def __init__(self, dicomDirs, bidsDir, participant=None,
+            options=DEFAULT.dcm2niixOptions):
+        self.logger = logging.getLogger(__name__)
+
+        self.sidecarsFiles = []
+
+        self.dicomDirs = dicomDirs
+        self.bidsDir = bidsDir
         self.participant = participant
-        self.options = "-b y -ba y -z y -f '%3s_%f_%p_%t'"
-        self.sidecars = []
-        self._logger = logger
-        if self._logger:
-            self.logger = logging.getLogger("dcm2bids")
+        self.options = options
+
 
     @property
     def outputDir(self):
+        """
+        Returns:
+            A directory to save all the output files of dcm2niix
+        """
         if self.participant:
             tmpDir = self.participant.prefix
         else:
-            tmpDir = "helper"
-        return os.path.join(self.bidsDir, "tmp_dcm2bids", tmpDir)
+            tmpDir = DEFAULT.helperDir
+        return os.path.join(self.bidsDir, DEFAULT.tmpDirName, tmpDir)
 
 
-    def run(self, forceRun=False):
+    def run(self, force=False):
+        """ Run dcm2niix if necessary
+
+        Args:
+            force (boolean): Forces a cleaning of a previous execution of
+                             dcm2niix
+
+        Sets:
+            sidecarsFiles (list): A list of sidecar path created by dcm2niix
+        """
         try:
             oldOutput = os.listdir(self.outputDir) != []
         except:
             oldOutput = False
 
-        if oldOutput and forceRun:
-            if self._logger:
-                self.logger.info("Old dcm2niix output found")
-                self.logger.info("Cleaning the old dcm2niix output and rerun it because --forceDcm2niix")
-                self.logger.info("")
-            clean(self.outputDir)
+        if oldOutput and force:
+            self.logger.warning("Previous dcm2niix directory output found:")
+            self.logger.warning(self.outputDir)
+            self.logger.warning("'force' argument is set to True")
+            self.logger.warning(
+                    "Cleaning the previous directory and running dcm2niix")
+
+            shutil.rmtree(self.outputDir, ignore_errors=True)
+
+            #os.makedirs(self.outputDir, exist_ok=True)
+            #python2 compatibility
+            if not os.path.exists(self.outputDir):
+                os.makedirs(self.outputDir)
+
             self.execute()
 
         elif oldOutput:
-            if self._logger:
-                self.logger.info("Old dcm2niix output found")
-                self.logger.info("Use --forceDcm2niix to rerun the conversion")
+            self.logger.warning("Previous dcm2niix directory output found:")
+            self.logger.warning(self.outputDir)
+            self.logger.warning("Use --forceDcm2niix to rerun dcm2niix")
 
         else:
-            clean(self.outputDir)
+            #os.makedirs(self.outputDir, exist_ok=True)
+            #python2 compatibility
+            if not os.path.exists(self.outputDir):
+                os.makedirs(self.outputDir)
+
             self.execute()
 
-        self.sidecars = glob.glob(os.path.join(self.outputDir, "*.json"))
-        self.sidecars.sort()
+        self.sidecarFiles = glob(os.path.join(self.outputDir, "*.json"))
 
-        return 0
+        return os.EX_OK
 
 
     def execute(self):
-        if self._logger:
-            self.logger.info("--- running dcm2niix ---")
-        for directory in self.dicomDirs:
-            commandStr = "dcm2niix {} -o {} {}"
-            cmd = commandStr.format(self.options, self.outputDir, directory)
-            run_shell_command(cmd)
+        """ Execute dcm2niix for each directory in dicomDirs
+        """
+        for dicomDir in self.dicomDirs:
+            commandTpl = "dcm2niix {} -o {} {}"
+            cmd = commandTpl.format(self.options, self.outputDir, dicomDir)
+            output = run_shell_command(cmd)
+
+            try:
+                output = output.decode()
+            except:
+                pass
+
+            self.logger.debug("\n" + output)
+            self.logger.info("Check log file for dcm2niix output")
+
