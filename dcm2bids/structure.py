@@ -234,7 +234,7 @@ class Acquisition(object):
             intendedValue = []
             for index in self.intendedFor:
                 intendedDesc = descriptions[index]
-
+                session = self.participant.session
                 dataType = intendedDesc["dataType"]
 
                 niiFile = self.participant.prefix
@@ -243,7 +243,7 @@ class Acquisition(object):
                 niiFile += ".nii.gz"
 
                 intendedValue.append(
-                        opj(dataType, niiFile).replace("\\", "/"))
+                        opj(session, dataType, niiFile).replace("\\", "/"))
 
             if len(intendedValue) == 1:
                 data["IntendedFor"] = intendedValue[0]
